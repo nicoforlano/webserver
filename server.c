@@ -17,7 +17,7 @@ void serverInit(Server* server, char* port) {
 	printf("** Socket Server File Descriptor: %d\n **", server->socketFileDescriptor);
 
 	if(server->socketFileDescriptor == -1) {
-		printf("** El socket no pudo ser creado **\n");
+		printf("** Error - Socket couldn't be created: %s %d**\n", gai_strerror(errno), errno);
 		exit(0);
 	}
 
@@ -54,12 +54,52 @@ struct addrinfo* getServerAddressInfo(char* port) {
 		exit(1);
 	}
 
-	return serverAddressInfo;
+	freeaddrinfo(serverInfo);
 
+	return serverAddressInfo;
 }
 
 void serverListen(Server* server) {
 
-	
+	Request* request = (Request*) malloc(sizeof(Request*));
+	socklen_t requestAddressSize = sizeof(request->addressInfo);
+
+	listen(server->socketFileDescriptor, BACKLOG);
+
+	while(TRUE) {
+
+		request->fileDescriptor = accept(server->socketFileDescriptor, 
+												  request->addressInfo, 
+												  &requestAddressSize);
+
+		if(request->fileDescriptor < 0) {
+			printf("* Error while accepting new connection: %s\n", strerror(errno));
+		}
+
+		createRequestThread(request);
+
+	}
 }
 
+void createRequestThread(Request *request) {
+
+	pthread_t requestThread;
+	pthread_attr_t requestThreadAttributes;
+
+	initRequestThreadAttributes(&requestThreadAttributes);
+
+	pthread_create(&requestThread, &requestThreadAttributes, handleRequest, request);
+
+}
+
+void initRequestThreadAttributes(pthread_attr_t* attributes) {
+
+	pthread_attr_init(attributes);
+	pthread_attr_setdetachstate(attributes, PTHREAD_CREATE_DETACHED);
+	pthread_attr_setschedpolicy(attributes, SCHED_FIFO);
+
+}
+
+void* handleRequest(void* args) {
+
+}
