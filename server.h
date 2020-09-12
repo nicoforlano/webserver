@@ -2,6 +2,8 @@
 
 #define SERVER
 
+#define _POSIX_C_SOURCE 200112L
+
 #include <pthread.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -12,9 +14,11 @@
 
 typedef struct Server {
 	int socketFileDescriptor;
-	struct sockaddr_in socketAddress;
+	struct sockaddr_in* socketAddress;
 } Server;
 
-void initServer(Server* server);
+void serverInit(Server* server, char* port);
+void serverListen(Server* server);
+struct addrinfo* getServerAddressInfo(char* port);
 
 #endif

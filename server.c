@@ -1,7 +1,31 @@
 #include "server.h"
 
 
-void initServer(Server* server, char* port) {
+void serverInit(Server* server, char* port) {
+
+	struct addrinfo* serverAddressInfo;
+
+	serverAddressInfo = getServerAddressInfo(port);
+
+	server = (Server*) malloc(sizeof(Server*));
+
+	server->socketFileDescriptor = socket(serverAddressInfo->ai_family, 
+										  serverAddressInfo->ai_socktype, 
+										  serverAddressInfo->ai_protocol);
+	server->socketAddress = (struct sockaddr_in*) serverAddressInfo->ai_addr;
+
+	printf("** Socket Server File Descriptor: %d\n **", server->socketFileDescriptor);
+
+	if(server->socketFileDescriptor == -1) {
+		printf("** El socket no pudo ser creado **\n");
+		exit(0);
+	}
+
+	bind(server->socketFileDescriptor, serverAddressInfo->ai_addr, serverAddressInfo->ai_addrlen);
+
+}
+
+struct addrinfo* getServerAddressInfo(char* port) {
 
 	int status;
 	struct addrinfo hints;
@@ -30,15 +54,12 @@ void initServer(Server* server, char* port) {
 		exit(1);
 	}
 
-	server = (Server*) malloc(sizeof(Server*));
-
-	server->socketFileDescriptor = socket(serverAddressInfo->ai_family, serverAddressInfo->ai_socktype, serverAddressInfo->ai_protocol);
-	
-	printf("** Socket Server File Descriptor: %d\n **", server->socketFileDescriptor);
-	if(server->socketFileDescriptor == -1) {
-		printf("** El socket no pudo ser creado **\n");
-		exit(0);
-	}
-
+	return serverAddressInfo;
 
 }
+
+void serverListen(Server* server) {
+
+	
+}
+

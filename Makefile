@@ -1,13 +1,15 @@
-all: main server clean-o
+cc = gcc
 
-main: main.c server.h server.o
-	gcc main.c server.o -o webserver -std=C99
+all: webserver clean-o
 
-server: server.c server.h
-	gcc -c server.c -std=C99
+webserver: main.c server.h server.o
+	cc main.c server.o -o webserver -std=c99
+
+server.o: server.c server.h
+	cc -c server.c -std=c99
 
 clean:
-	rm -rf *o main server *~
+	rm -rf *o webserver *~
 
 clean-o:
 	rm *.o

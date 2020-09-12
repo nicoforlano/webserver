@@ -8,8 +8,8 @@ int main(int argc, char const *argv[])
 	
 	Server* server;
 
-	initServer(server);
+	serverInit(server, "8080");
 
-	
+	printf("Ending\n");
 	return 0;
 }
