@@ -7,8 +7,7 @@ void serverInit(Server* server, char* port) {
 
 	serverAddressInfo = getServerAddressInfo(port);
 
-	server = (Server*) malloc(sizeof(Server*));
-
+	printf("%d - %d - %d \n", serverAddressInfo->ai_family, serverAddressInfo->ai_socktype, serverAddressInfo->ai_protocol);
 	server->socketFileDescriptor = socket(serverAddressInfo->ai_family, 
 										  serverAddressInfo->ai_socktype, 
 										  serverAddressInfo->ai_protocol);
@@ -30,7 +29,7 @@ struct addrinfo* getServerAddressInfo(char* port) {
 	int status;
 	struct addrinfo hints;
 	struct addrinfo* serverInfo;
-	struct addrinfo* serverAddressInfo = NULL;
+	struct addrinfo* serverAddressInfo = malloc(sizeof(struct addrinfo*));
 
 	memset(&hints, 0, sizeof(hints));
 
@@ -46,6 +45,7 @@ struct addrinfo* getServerAddressInfo(char* port) {
 	for(struct addrinfo *currentAddress = serverInfo; currentAddress != NULL; currentAddress = currentAddress->ai_next) {
 		if(currentAddress->ai_family == AF_INET) {
 			serverAddressInfo = currentAddress;
+			printf("Setting address - %d - %d - %d\n", serverAddressInfo->ai_family, serverAddressInfo->ai_socktype, serverAddressInfo->ai_protocol);
 		}
 	}
 
@@ -54,7 +54,7 @@ struct addrinfo* getServerAddressInfo(char* port) {
 		exit(1);
 	}
 
-	freeaddrinfo(serverInfo);
+	//freeaddrinfo(serverInfo);
 
 	return serverAddressInfo;
 }
@@ -71,7 +71,7 @@ void serverListen(Server* server) {
 		request->fileDescriptor = accept(server->socketFileDescriptor, 
 												  request->addressInfo, 
 												  &requestAddressSize);
-
+		printf("accepting\n");
 		if(request->fileDescriptor < 0) {
 			printf("* Error while accepting new connection: %s\n", strerror(errno));
 		}
@@ -87,7 +87,7 @@ void createRequestThread(Request *request) {
 	pthread_attr_t requestThreadAttributes;
 
 	initRequestThreadAttributes(&requestThreadAttributes);
-
+	printf("Creating Thread\n");
 	pthread_create(&requestThread, &requestThreadAttributes, handleRequest, request);
 
 }
@@ -102,4 +102,14 @@ void initRequestThreadAttributes(pthread_attr_t* attributes) {
 
 void* handleRequest(void* args) {
 
+	printf("Hndling request!\n");
+}
+
+void configInit(Config* config, int argumentsCount, char *arguments[]) {
+
+	config->listeningPort = arguments[PORT_ARG_INDEX];
+	if(atoi(config->listeningPort) == 0) {
+		printf("Error: Port number is not valid.\n");
+		exit(1);
+	}
 }

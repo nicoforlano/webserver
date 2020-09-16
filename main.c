@@ -2,14 +2,18 @@
 #include <stdio.h>
 #include "server.h"
 
-int main(int argc, char const *argv[])
+int main(int argc, char *argv[])
 {
 	printf("**** INICIANDO ****\n");
 	
-	Server* server;
+	Server server;
+	Config config;
 
-	serverInit(server, "8080");
-
+	configInit(&config, argc, argv);
+	printf("PORT: %d\n",config.listeningPort);
+	serverInit(&server, config.listeningPort);
+	serverListen(&server);
+	
 	printf("Ending\n");
 	return 0;
 }
