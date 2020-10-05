@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 typedef struct Server {
 	int socketFileDescriptor;
@@ -26,7 +27,7 @@ typedef struct Request {
 } Request;
 
 typedef struct Config {
-	char* listeningPort;
+	char listeningPort[5];
 } Config;
 
 void serverInit(Server* server, char* port);

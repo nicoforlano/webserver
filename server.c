@@ -29,7 +29,7 @@ struct addrinfo* getServerAddressInfo(char* port) {
 	int status;
 	struct addrinfo hints;
 	struct addrinfo* serverInfo;
-	struct addrinfo* serverAddressInfo = malloc(sizeof(struct addrinfo*));
+	struct addrinfo* serverAddressInfo = malloc(sizeof(struct addrinfo));
 
 	memset(&hints, 0, sizeof(hints));
 
@@ -61,7 +61,8 @@ struct addrinfo* getServerAddressInfo(char* port) {
 
 void serverListen(Server* server) {
 
-	Request* request = (Request*) malloc(sizeof(Request*));
+	Request* request = malloc(sizeof(Request));
+	request->addressInfo = malloc(sizeof(struct sockaddr));
 	socklen_t requestAddressSize = sizeof(request->addressInfo);
 
 	listen(server->socketFileDescriptor, BACKLOG);
@@ -102,12 +103,25 @@ void initRequestThreadAttributes(pthread_attr_t* attributes) {
 
 void* handleRequest(void* args) {
 
-	printf("Hndling request!\n");
+	printf("Hndling request - FD: %d!\n", request->fileDescriptor);
+	
+	Request* request = (Request*) args;
+	
+	char *msg = "HELLO MY FELLOW CLIENT!";
+
+	send(request->fileDescriptor, msg, strlen(msg), 0);
+
 }
 
 void configInit(Config* config, int argumentsCount, char *arguments[]) {
 
-	config->listeningPort = arguments[PORT_ARG_INDEX];
+	if(argumentsCount < 2) {
+		printf("> Please specify the listenting port. Ex: 8080\n");
+		exit(0);
+	}
+	
+	strcpy(config->listeningPort, arguments[PORT_ARG_INDEX]);
+
 	if(atoi(config->listeningPort) == 0) {
 		printf("Error: Port number is not valid.\n");
 		exit(1);

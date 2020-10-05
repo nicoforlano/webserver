@@ -4,14 +4,14 @@
 
 int main(int argc, char *argv[])
 {
-	printf("**** INICIANDO ****\n");
+	printf("**** Setting up server... ****\n");
 	
 	Server server;
-	Config config;
+	Config* config = malloc(sizeof(Config));
 
-	configInit(&config, argc, argv);
-	printf("PORT: %d\n",config.listeningPort);
-	serverInit(&server, config.listeningPort);
+	configInit(config, argc, argv);
+	printf("PORT: %s\n",config->listeningPort);
+	serverInit(&server, config->listeningPort);
 	serverListen(&server);
 	
 	printf("Ending\n");
