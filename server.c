@@ -3,17 +3,16 @@
 
 void serverInit(Server* server, char* port) {
 
+	printf("*** Initializing server on port %s***\n", port);
+
 	struct addrinfo* serverAddressInfo;
 
 	serverAddressInfo = getServerAddressInfo(port);
 
-	printf("%d - %d - %d \n", serverAddressInfo->ai_family, serverAddressInfo->ai_socktype, serverAddressInfo->ai_protocol);
 	server->socketFileDescriptor = socket(serverAddressInfo->ai_family, 
 										  serverAddressInfo->ai_socktype, 
 										  serverAddressInfo->ai_protocol);
 	server->socketAddress = (struct sockaddr_in*) serverAddressInfo->ai_addr;
-
-	printf("** Socket Server File Descriptor: %d\n **", server->socketFileDescriptor);
 
 	if(server->socketFileDescriptor == -1) {
 		printf("** Error - Socket couldn't be created: %s %d**\n", gai_strerror(errno), errno);
@@ -21,6 +20,8 @@ void serverInit(Server* server, char* port) {
 	}
 
 	bind(server->socketFileDescriptor, serverAddressInfo->ai_addr, serverAddressInfo->ai_addrlen);
+	
+	freeaddrinfo(serverAddressInfo);
 
 }
 
@@ -29,7 +30,7 @@ struct addrinfo* getServerAddressInfo(char* port) {
 	int status;
 	struct addrinfo hints;
 	struct addrinfo* serverInfo;
-	struct addrinfo* serverAddressInfo = malloc(sizeof(struct addrinfo));
+	struct addrinfo* serverAddressInfo;
 
 	memset(&hints, 0, sizeof(hints));
 
@@ -45,7 +46,6 @@ struct addrinfo* getServerAddressInfo(char* port) {
 	for(struct addrinfo *currentAddress = serverInfo; currentAddress != NULL; currentAddress = currentAddress->ai_next) {
 		if(currentAddress->ai_family == AF_INET) {
 			serverAddressInfo = currentAddress;
-			printf("Setting address - %d - %d - %d\n", serverAddressInfo->ai_family, serverAddressInfo->ai_socktype, serverAddressInfo->ai_protocol);
 		}
 	}
 
@@ -54,27 +54,26 @@ struct addrinfo* getServerAddressInfo(char* port) {
 		exit(1);
 	}
 
-	//freeaddrinfo(serverInfo);
-
 	return serverAddressInfo;
 }
 
 void serverListen(Server* server) {
 
-	Request* request = malloc(sizeof(Request));
-	request->addressInfo = malloc(sizeof(struct sockaddr));
-	socklen_t requestAddressSize = sizeof(request->addressInfo);
+	printf("*** Server listening ***\n");
 
 	listen(server->socketFileDescriptor, BACKLOG);
 
 	while(TRUE) {
 
+		Request* request = malloc(sizeof(Request));
+		request->addressInfo = malloc(sizeof(struct sockaddr));
+		socklen_t requestAddressSize = sizeof(request->addressInfo);
+
 		request->fileDescriptor = accept(server->socketFileDescriptor, 
 												  request->addressInfo, 
 												  &requestAddressSize);
-		printf("accepting\n");
 		if(request->fileDescriptor < 0) {
-			printf("* Error while accepting new connection: %s\n", strerror(errno));
+			printf("*** Error while accepting new connection: %s\n", strerror(errno));
 		}
 
 		createRequestThread(request);
@@ -86,9 +85,7 @@ void createRequestThread(Request *request) {
 
 	pthread_t requestThread;
 	pthread_attr_t requestThreadAttributes;
-
 	initRequestThreadAttributes(&requestThreadAttributes);
-	printf("Creating Thread\n");
 	pthread_create(&requestThread, &requestThreadAttributes, handleRequest, request);
 
 }
@@ -102,15 +99,23 @@ void initRequestThreadAttributes(pthread_attr_t* attributes) {
 }
 
 void* handleRequest(void* args) {
-
-	printf("Hndling request - FD: %d!\n", request->fileDescriptor);
 	
 	Request* request = (Request*) args;
+
+	printf("Hndling request - FD: %d!\n", request->fileDescriptor);
 	
 	char *msg = "HELLO MY FELLOW CLIENT!";
 
 	send(request->fileDescriptor, msg, strlen(msg), 0);
 
+	printf("Closing connection %d\n", request->fileDescriptor);
+
+	close(request->fileDescriptor);
+
+	free(request->addressInfo);
+	free(request);
+
+	return 0;
 }
 
 void configInit(Config* config, int argumentsCount, char *arguments[]) {
