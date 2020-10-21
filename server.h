@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/select.h>
+#include <argp.h>
 
 typedef struct Server {
 	int socketFileDescriptor;
@@ -28,10 +30,18 @@ typedef struct Request {
 
 typedef struct Config {
 	char listeningPort[5];
+	int mode;
 } Config;
+
+typedef enum {
+	NO_MODE,
+	BLOCKING,
+	NONBLOCKING
+} ServerMode;
 
 void serverInit(Server* server, char* port);
 void serverListen(Server* server);
+void nonBlockingServerListen(Server* server);
 struct addrinfo* getServerAddressInfo(char* port);
 void createRequestThread(Request* request);
 void initRequestThreadAttributes(pthread_attr_t* attributes);

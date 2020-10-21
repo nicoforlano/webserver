@@ -73,7 +73,7 @@ void serverListen(Server* server) {
 												  request->addressInfo, 
 												  &requestAddressSize);
 		if(request->fileDescriptor < 0) {
-			printf("*** Error while accepting new connection: %s\n", strerror(errno));
+			printf("> Error while accepting new connection: %s\n", strerror(errno));
 		}
 
 		createRequestThread(request);
@@ -118,10 +118,15 @@ void* handleRequest(void* args) {
 	return 0;
 }
 
+void nonBlockingServerListen(Server* server) {
+
+	
+}
+
 void configInit(Config* config, int argumentsCount, char *arguments[]) {
 
-	if(argumentsCount < 2) {
-		printf("> Please specify the listenting port. Ex: 8080\n");
+	if(argumentsCount < 3) {
+		printf("> Please specify the listenting port and the mode. Ex: 8080 1\n");
 		exit(0);
 	}
 	
