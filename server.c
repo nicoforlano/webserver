@@ -1,13 +1,13 @@
 #include "server.h"
 
 
-void serverInit(Server* server, char* port) {
+void serverInit(Server* server, Config* config) {
 
-	printf("*** Initializing server on port %s***\n", port);
+	printf("*** Initializing server on port %s***\n", config->listeningPort);
 
 	struct addrinfo* serverAddressInfo;
 
-	serverAddressInfo = getServerAddressInfo(port);
+	serverAddressInfo = getServerAddressInfo(config->listeningPort);
 
 	server->socketFileDescriptor = socket(serverAddressInfo->ai_family, 
 										  serverAddressInfo->ai_socktype, 
@@ -17,6 +17,11 @@ void serverInit(Server* server, char* port) {
 	if(server->socketFileDescriptor == -1) {
 		printf("** Error - Socket couldn't be created: %s %d**\n", gai_strerror(errno), errno);
 		exit(0);
+	}
+
+	if(config->mode == NONBLOCKING) {
+		printf("Setting non block\n");
+		fcntl(server->socketFileDescriptor, F_SETFL, O_NONBLOCK);
 	}
 
 	bind(server->socketFileDescriptor, serverAddressInfo->ai_addr, serverAddressInfo->ai_addrlen);
@@ -57,28 +62,37 @@ struct addrinfo* getServerAddressInfo(char* port) {
 	return serverAddressInfo;
 }
 
-void serverListen(Server* server) {
+void serverListen(Server* server, int serverMode) {
 
-	printf("*** Server listening ***\n");
+	switch(serverMode) {
+		case BLOCKING: {
+			printf("*** Server listening ***\n");
 
-	listen(server->socketFileDescriptor, BACKLOG);
+			listen(server->socketFileDescriptor, BACKLOG);
 
-	while(TRUE) {
+			while(TRUE) {
 
-		Request* request = malloc(sizeof(Request));
-		request->addressInfo = malloc(sizeof(struct sockaddr));
-		socklen_t requestAddressSize = sizeof(request->addressInfo);
+				Request* request = malloc(sizeof(Request));
+				request->addressInfo = malloc(sizeof(struct sockaddr));
+				socklen_t requestAddressSize = sizeof(request->addressInfo);
 
-		request->fileDescriptor = accept(server->socketFileDescriptor, 
-												  request->addressInfo, 
-												  &requestAddressSize);
-		if(request->fileDescriptor < 0) {
-			printf("> Error while accepting new connection: %s\n", strerror(errno));
+				request->fileDescriptor = accept(server->socketFileDescriptor, 
+														  request->addressInfo, 
+														  &requestAddressSize);
+				if(request->fileDescriptor < 0) {
+					printf("> Error while accepting new connection: %s\n", strerror(errno));
+				}
+
+				createRequestThread(request);
+
+			}	
 		}
+		case NONBLOCKING: {
 
-		createRequestThread(request);
 
+		}
 	}
+	
 }
 
 void createRequestThread(Request *request) {
@@ -136,4 +150,7 @@ void configInit(Config* config, int argumentsCount, char *arguments[]) {
 		printf("Error: Port number is not valid.\n");
 		exit(1);
 	}
+
+	config->mode = atoi(arguments[PORT_ARG_INDEX + 1]);
+
 }

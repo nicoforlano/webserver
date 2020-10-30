@@ -17,6 +17,7 @@
 #include <string.h>
 #include <sys/select.h>
 #include <argp.h>
+#include <fcntl.h>
 
 typedef struct Server {
 	int socketFileDescriptor;
@@ -39,8 +40,8 @@ typedef enum {
 	NONBLOCKING
 } ServerMode;
 
-void serverInit(Server* server, char* port);
-void serverListen(Server* server);
+void serverInit(Server* server, Config* config);
+void serverListen(Server* server, int serverMode);
 void nonBlockingServerListen(Server* server);
 struct addrinfo* getServerAddressInfo(char* port);
 void createRequestThread(Request* request);

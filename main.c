@@ -12,11 +12,11 @@ int main(int argc, char *argv[])
 	Server server;
 	Config* config = malloc(sizeof(Config));
 
-	argp_parse(0, argc, argv, 0, 0, 0);
+	//argp_parse(0, argc, argv, 0, 0, 0);
 	
 	configInit(config, argc, argv);
-	serverInit(&server, config->listeningPort);
-	serverListen(&server);
+	serverInit(&server, config);
+	serverListen(&server, config->mode);
 	
 	free(config);
 
