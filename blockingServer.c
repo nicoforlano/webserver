@@ -1,8 +1,12 @@
 #include "blockingServer.h"
 
-void startBlockingRequestHandling(Server* server) {
+void startBlockingRequestHandling(Server* server, Config* config) {
 
-	threadpool_t* threadPool = threadpool_create(5, THREADPOOL_QUEUE_SIZE, 0);
+	printf("Worker threads count %d\n", config->workerThreadsCount);
+	
+	threadpool_t* threadPool = threadpool_create(config->workerThreadsCount,
+												 THREADPOOL_QUEUE_SIZE,
+												 0);
 
 	while(TRUE) {
 		Request* request = malloc(sizeof(Request));
@@ -22,7 +26,7 @@ void startBlockingRequestHandling(Server* server) {
 }
 
 void* handleRequest(void* args) {
-	
+	// TODO: Serious imlementetion hehe
 	Request* request = (Request*) args;
 
 	printf("Hndling request - FD: %d!\n", request->fileDescriptor);

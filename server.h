@@ -33,6 +33,7 @@ typedef struct Request {
 typedef struct Config {
 	char listeningPort[5];
 	int mode;
+	int workerThreadsCount;
 } Config;
 
 typedef enum {
@@ -42,7 +43,7 @@ typedef enum {
 } ServerMode;
 
 void serverInit(Server* server, Config* config);
-void serverListen(Server* server, int serverMode);
+void serverListen(Server* server, Config* config);
 struct addrinfo* getServerAddressInfo(char* port);
 void configInit(Config* config, int argc, char *argv[]);
 

@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	
 	configInit(config, argc, argv);
 	serverInit(&server, config);
-	serverListen(&server, config->mode);
+	serverListen(&server, config);
 	
 	free(config);
 

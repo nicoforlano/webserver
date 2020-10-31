@@ -63,14 +63,14 @@ struct addrinfo* getServerAddressInfo(char* port) {
 	return serverAddressInfo;
 }
 
-void serverListen(Server* server, int serverMode) {
+void serverListen(Server* server, Config* config) {
 
 	listen(server->socketFileDescriptor, BACKLOG);
 
-	switch(serverMode) {
+	switch(config->mode) {
 		case BLOCKING: {
 			printf("*** Server listening ***\n");
-			startBlockingRequestHandling(server);
+			startBlockingRequestHandling(server, config);
 		}
 		case NONBLOCKING: {
 			printf("Non blocking server listening\n");
@@ -82,9 +82,19 @@ void serverListen(Server* server, int serverMode) {
 
 void configInit(Config* config, int argumentsCount, char *arguments[]) {
 
-	if(argumentsCount < 3) {
-		printf("> Please specify the listenting port and the mode. Ex: 8080 1\n");
-		exit(0);
+	if(atoi(arguments[PORT_ARG_INDEX + 1]) == 1) {
+		if(argumentsCount < 4) {
+			printf("> Please specify the listenting port, server's mode and worker thread count. Ex: 8080 1 20\n");
+			exit(0);
+		}
+
+		config->workerThreadsCount = atoi(arguments[PORT_ARG_INDEX + 2]);
+
+	} else {
+		if(argumentsCount < 3) {
+			printf("> Please specify the listenting port and server's mode. Ex: 8080 1\n");
+			exit(0);
+		}
 	}
 	
 	strcpy(config->listeningPort, arguments[PORT_ARG_INDEX]);

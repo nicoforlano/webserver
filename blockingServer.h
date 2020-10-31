@@ -5,9 +5,7 @@
 #include "server.h"
 #include "threadpool.h"
 
-void startBlockingRequestHandling(Server* server);
-void createRequestThread(Request* request);
-void initRequestThreadAttributes(pthread_attr_t* attributes);
+void startBlockingRequestHandling(Server* server, Config* config);
 void* handleRequest(void* args);
 
 #endif
