@@ -1,6 +1,9 @@
 #include "blockingServer.h"
 
 void startBlockingRequestHandling(Server* server) {
+
+	threadpool_t* threadPool = threadpool_create(5, THREADPOOL_QUEUE_SIZE, 0);
+
 	while(TRUE) {
 		Request* request = malloc(sizeof(Request));
 		request->addressInfo = malloc(sizeof(struct sockaddr));
@@ -14,25 +17,8 @@ void startBlockingRequestHandling(Server* server) {
 			printf("> Error while accepting new connection: %s\n", strerror(errno));
 		}
 
-		createRequestThread(request);
+		threadpool_add(threadPool, &handleRequest, request, 0);
 	}
-}
-
-void createRequestThread(Request *request) {
-
-	pthread_t requestThread;
-	pthread_attr_t requestThreadAttributes;
-	initRequestThreadAttributes(&requestThreadAttributes);
-	pthread_create(&requestThread, &requestThreadAttributes, handleRequest, request);
-
-}
-
-void initRequestThreadAttributes(pthread_attr_t* attributes) {
-
-	pthread_attr_init(attributes);
-	pthread_attr_setdetachstate(attributes, PTHREAD_CREATE_DETACHED);
-	pthread_attr_setschedpolicy(attributes, SCHED_FIFO);
-
 }
 
 void* handleRequest(void* args) {
