@@ -1,8 +1,6 @@
 #include "blockingServer.h"
 
 void startBlockingRequestHandling(Server* server, Config* config) {
-
-	printf("Worker threads count %d\n", config->workerThreadsCount);
 	
 	threadpool_t* threadPool = threadpool_create(config->workerThreadsCount,
 												 THREADPOOL_QUEUE_SIZE,

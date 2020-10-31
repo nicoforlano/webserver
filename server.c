@@ -2,9 +2,24 @@
 #include "blockingServer.h"
 #include "nonBlockingServer.h"
 
-void serverInit(Server* server, Config* config) {
 
-	printf("*** Initializing server on port %s***\n", config->listeningPort);
+Config* initializeConfigDefaults() {
+	Config* config = malloc(sizeof(Config));
+	strcpy(config->listeningPort, "8080");
+	config->mode = 1;
+	config->workerThreadsCount = 10;
+	return config;
+}
+
+void showServerConfig(Config* config) {
+	printf("***** SERVER CONFIGURATION *****\n");
+	printf("*** PORT: %s \n", config->listeningPort);
+	printf("*** MODE: %s\n", (config->mode == BLOCKING) ? "BLOCKING" : "NONBLOCKING");
+	printf("*** WORKER THREADS: %d\n", (config->mode == BLOCKING) ? config->workerThreadsCount : 0);
+	printf("*********************************\n");
+}
+
+void serverInit(Server* server, Config* config) {
 
 	struct addrinfo* serverAddressInfo;
 
@@ -16,12 +31,11 @@ void serverInit(Server* server, Config* config) {
 	server->socketAddress = (struct sockaddr_in*) serverAddressInfo->ai_addr;
 
 	if(server->socketFileDescriptor == -1) {
-		printf("** Error - Socket couldn't be created: %s %d**\n", gai_strerror(errno), errno);
+		printf("> Error - Socket couldn't be created: %s %d**\n", gai_strerror(errno), errno);
 		exit(0);
 	}
 
 	if(config->mode == NONBLOCKING) {
-		printf("Setting non block\n");
 		fcntl(server->socketFileDescriptor, F_SETFL, O_NONBLOCK);
 	}
 
@@ -45,7 +59,7 @@ struct addrinfo* getServerAddressInfo(char* port) {
 	hints.ai_flags = AI_PASSIVE;
 
 	if((status = getaddrinfo(NULL, port, &hints, &serverInfo)) != 0) {
-		fprintf(stderr, "* Error while trying to get server information: %s\n", gai_strerror(status));
+		fprintf(stderr, "> Error while trying to get server information: %s\n", gai_strerror(status));
 		exit(1);
 	}
 
@@ -56,7 +70,7 @@ struct addrinfo* getServerAddressInfo(char* port) {
 	}
 
 	if(serverAddressInfo == NULL) {
-		printf("Server address information couldn't be obtained\n");
+		printf("> Server address information couldn't be obtained\n");
 		exit(1);
 	}
 
@@ -64,46 +78,14 @@ struct addrinfo* getServerAddressInfo(char* port) {
 }
 
 void serverListen(Server* server, Config* config) {
-
 	listen(server->socketFileDescriptor, BACKLOG);
-
+	printf("> Server is listening incoming requests...\n");
 	switch(config->mode) {
 		case BLOCKING: {
-			printf("*** Server listening ***\n");
 			startBlockingRequestHandling(server, config);
 		}
 		case NONBLOCKING: {
-			printf("Non blocking server listening\n");
 			startNonBlockingRequestHandling(server);
 		}
 	}
-	
-}
-
-void configInit(Config* config, int argumentsCount, char *arguments[]) {
-
-	if(atoi(arguments[PORT_ARG_INDEX + 1]) == 1) {
-		if(argumentsCount < 4) {
-			printf("> Please specify the listenting port, server's mode and worker thread count. Ex: 8080 1 20\n");
-			exit(0);
-		}
-
-		config->workerThreadsCount = atoi(arguments[PORT_ARG_INDEX + 2]);
-
-	} else {
-		if(argumentsCount < 3) {
-			printf("> Please specify the listenting port and server's mode. Ex: 8080 1\n");
-			exit(0);
-		}
-	}
-	
-	strcpy(config->listeningPort, arguments[PORT_ARG_INDEX]);
-
-	if(atoi(config->listeningPort) == 0) {
-		printf("Error: Port number is not valid.\n");
-		exit(1);
-	}
-
-	config->mode = atoi(arguments[PORT_ARG_INDEX + 1]);
-
 }

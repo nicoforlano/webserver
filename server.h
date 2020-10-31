@@ -42,9 +42,10 @@ typedef enum {
 	NONBLOCKING
 } ServerMode;
 
+Config* initializeConfigDefaults();
+void showServerConfig(Config* config);
 void serverInit(Server* server, Config* config);
 void serverListen(Server* server, Config* config);
 struct addrinfo* getServerAddressInfo(char* port);
-void configInit(Config* config, int argc, char *argv[]);
 
 #endif

@@ -14,9 +14,7 @@ void startNonBlockingRequestHandling(Server* server) {
 	while(TRUE) {
 
 		tempReadFds = readFds;
-		printf("maxFd %d\n", maxFd);
 		int selectReturn = select(maxFd + 1, &tempReadFds, NULL, NULL, NULL);
-		printf("Select return\n");
 
 		if(selectReturn == -1) {
 			perror("select");
@@ -49,6 +47,7 @@ void startNonBlockingRequestHandling(Server* server) {
 						FD_CLR(fd, &readFds);
 						continue;
 					} else {
+						//Process request
 						printf("Client %d: %s\n", fd, buffer);
 					}
 				}
