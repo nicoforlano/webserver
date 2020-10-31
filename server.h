@@ -44,11 +44,7 @@ typedef enum {
 
 void serverInit(Server* server, Config* config);
 void serverListen(Server* server, int serverMode);
-void nonBlockingServerListen(Server* server);
 struct addrinfo* getServerAddressInfo(char* port);
-void createRequestThread(Request* request);
-void initRequestThreadAttributes(pthread_attr_t* attributes);
-void* handleRequest(void* args);
 void configInit(Config* config, int argc, char *argv[]);
 
 #endif
