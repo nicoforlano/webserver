@@ -3,15 +3,10 @@
 
 void startNonBlockingRequestHandling(Server* server) {
 
-	printf("Non blocking\n");
 	char buffer[256];
-	struct timeval tv;
 	fd_set readFds;
 	fd_set tempReadFds;
 	int maxFd = server->socketFileDescriptor;
-
-	tv.tv_sec = 2;
-	tv.tv_usec = 500000;
 
 	FD_ZERO(&readFds);
 	FD_SET(server->socketFileDescriptor, &readFds);
