@@ -16,6 +16,8 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/select.h>
+#include <sys/time.h>
+#include <unistd.h>
 #include <argp.h>
 #include <fcntl.h>
 
