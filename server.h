@@ -50,5 +50,7 @@ void showServerConfig(Config* config);
 void serverInit(Server* server, Config* config);
 void serverListen(Server* server, Config* config);
 struct addrinfo* getServerAddressInfo(char* port);
+unsigned long getFileSize(char* fileName);
+void handleHttpRequest(int requestFd);
 void sendHttpResponse(int requestFd, char* status, char* contentType, char* fileName);
 #endif

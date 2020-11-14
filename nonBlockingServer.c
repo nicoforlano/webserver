@@ -23,8 +23,6 @@ void startNonBlockingRequestHandling(Server* server) {
 		for (int fd = 0; fd <= maxFd; ++fd)
 		{
 			if(FD_ISSET(fd, &tempReadFds)) {
-				printf("Evento en descriptor %d\n", fd);
-
 				if(fd == server->socketFileDescriptor) {
 
 					struct sockaddr clientAddress;
@@ -32,7 +30,7 @@ void startNonBlockingRequestHandling(Server* server) {
 
 					int clientFd = accept(server->socketFileDescriptor, &clientAddress, &clientAddressLength);
 
-					printf("Accepteed new connection %d\n", clientFd);
+					printf("> Accepted new connection %d\n", clientFd);
 
 					FD_SET(clientFd, &readFds);
 
@@ -40,16 +38,8 @@ void startNonBlockingRequestHandling(Server* server) {
 						maxFd = clientFd;
 					}
 				} else {
-
-					memset(&buffer, 0, 256);
-					ssize_t readed = recv(fd, &buffer, 256, 0);
-					if(readed < 1) {
-						FD_CLR(fd, &readFds);
-						continue;
-					} else {
-						//Process request
-						printf("Client %d: %s\n", fd, buffer);
-					}
+					handleHttpRequest(fd);
+					FD_CLR(fd, &readFds);
 				}
 			}
 		}

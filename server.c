@@ -90,6 +90,53 @@ void serverListen(Server* server, Config* config) {
 	}
 }
 
+unsigned long getFileSize(char* fileName) {
+	FILE* file = fopen(fileName, "r");
+	if(file == NULL) {
+		return NULL;
+	}
+	fseek(file, 0, SEEK_END);
+	unsigned long size = (unsigned long) ftell(file);
+	fseek(file, 0, SEEK_SET);
+	fclose(file);
+	return size;
+}
+
+void handleHttpRequest(int requestFd) {
+
+	char buffer[MAX_BUFFER_LENGTH];
+
+	recv(requestFd, buffer, MAX_BUFFER_LENGTH, 0);
+
+	printf("HTTP Request:\n%s\n", buffer);
+
+	if(strstr(buffer, "GET / HTTP/1.1") != NULL) {
+
+		sendHttpResponse(requestFd, "200 OK", "text/html; charset=UTF-8", "content/index.html");
+
+	} else if(strstr(buffer, "GET /image.jpg HTTP/1.1") != NULL) {
+
+		sendHttpResponse(requestFd, "200 OK", "image/jpeg", "content/image.jpg");
+
+	} else if(strstr(buffer, "GET /favicon.ico HTTP/1.1") != NULL) {
+
+		sendHttpResponse(requestFd, "200 OK", "image/x-icon", "content/favicon.ico");
+
+	} else if(strstr(buffer, "GET /styles.css HTTP/1.1") != NULL) {
+
+		sendHttpResponse(requestFd, "200 OK", "text/css", "content/styles.css");
+
+	} else {
+
+		sendHttpResponse(requestFd, "404 NOT FOUND", "text/html; charset=UTF-8", "content/not-found.html");
+
+	}
+
+	printf("Closing connection: %d\n\n", requestFd);
+
+	close(requestFd);
+}
+
 void sendHttpResponse(int requestFd, char* status, char* contentType, char* fileName) {
 
 		char buffer[MAX_BUFFER_LENGTH];
@@ -121,5 +168,5 @@ void sendHttpResponse(int requestFd, char* status, char* contentType, char* file
 		send(requestFd, buffer, responseFileSize, 0);
 
 		fclose(responseFile);
-		
+
 }
