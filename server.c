@@ -93,7 +93,7 @@ void serverListen(Server* server, Config* config) {
 unsigned long getFileSize(char* fileName) {
 	FILE* file = fopen(fileName, "r");
 	if(file == NULL) {
-		return NULL;
+		return 0;
 	}
 	fseek(file, 0, SEEK_END);
 	unsigned long size = (unsigned long) ftell(file);
@@ -168,5 +168,6 @@ void sendHttpResponse(int requestFd, char* status, char* contentType, char* file
 		send(requestFd, buffer, responseFileSize, 0);
 
 		fclose(responseFile);
+		free(httpResponse);
 
 }
