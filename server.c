@@ -90,16 +90,36 @@ void serverListen(Server* server, Config* config) {
 	}
 }
 
+void sendHttpResponse(int requestFd, char* status, char* contentType, char* fileName) {
 
-void parseHttpRequestLine(Request *request, char *buffer) {
+		char buffer[MAX_BUFFER_LENGTH];
+		FILE *responseFile;
+		unsigned long responseFileSize;
+		char* httpHeader;
+		char* httpResponse;
+		int httpResponseSize;
 
-}
+		responseFile = fopen(fileName, "r");
+		
+		if(responseFile == NULL) {
+			httpHeader = "HTTP/1.1 500 INTERNAL SERVER ERROR\r\nConnection: close\r\n\r\n";
+			httpResponseSize = strlen(httpHeader);
+			send(requestFd, httpHeader, strlen(httpHeader), 0);
+			return;
+		}
+		
+		httpHeader = "HTTP/1.1 %s\r\nContent-Length: %d\r\nContent-Type: %s\r\nConnection: close\r\n\r\n";
+		responseFileSize = getFileSize(fileName);
+		httpResponseSize = strlen(httpHeader) + sizeof(responseFileSize) + strlen(status) + strlen(contentType);
+		httpResponse = malloc(httpResponseSize);
+		
+		sprintf(httpResponse, httpHeader, status, responseFileSize, contentType);
+		printf("Sending HTTP Response:\n%s\n", httpResponse);
+		send(requestFd, httpResponse, strlen(httpResponse), 0);
+		
+		fread(buffer, sizeof(char), responseFileSize, responseFile);
+		send(requestFd, buffer, responseFileSize, 0);
 
-void parseHttpMethod(Request *request, char *line) {
-	
-}
-
-char createHttpResponse() {
-
-
+		fclose(responseFile);
+		
 }

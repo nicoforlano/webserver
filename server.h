@@ -5,7 +5,7 @@
 #define BACKLOG 20
 #define TRUE 1
 #define PORT_ARG_INDEX 1
-#define REQUEST_BUFFER_LENGTH 2048
+#define MAX_BUFFER_LENGTH 100000
 
 #include <pthread.h>
 #include <netinet/in.h>
@@ -50,7 +50,5 @@ void showServerConfig(Config* config);
 void serverInit(Server* server, Config* config);
 void serverListen(Server* server, Config* config);
 struct addrinfo* getServerAddressInfo(char* port);
-void parseHttpRequestLine(Request *request, char *buffer);
-void parseHttpMethod(Request *request, char *buffer);
-char createHttpResponse();
+void sendHttpResponse(int requestFd, char* status, char* contentType, char* fileName);
 #endif
