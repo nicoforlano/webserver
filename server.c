@@ -89,3 +89,17 @@ void serverListen(Server* server, Config* config) {
 		}
 	}
 }
+
+
+void parseHttpRequestLine(Request *request, char *buffer) {
+
+}
+
+void parseHttpMethod(Request *request, char *line) {
+	
+}
+
+char createHttpResponse() {
+
+
+}

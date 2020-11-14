@@ -5,6 +5,7 @@
 #define BACKLOG 20
 #define TRUE 1
 #define PORT_ARG_INDEX 1
+#define REQUEST_BUFFER_LENGTH 2048
 
 #include <pthread.h>
 #include <netinet/in.h>
@@ -28,6 +29,8 @@ typedef struct Server {
 typedef struct Request {
 	int fileDescriptor;
 	struct sockaddr* addressInfo;
+	char *httpMethod;
+	char *path;
 } Request;
 
 typedef struct Config {
@@ -47,5 +50,7 @@ void showServerConfig(Config* config);
 void serverInit(Server* server, Config* config);
 void serverListen(Server* server, Config* config);
 struct addrinfo* getServerAddressInfo(char* port);
-
+void parseHttpRequestLine(Request *request, char *buffer);
+void parseHttpMethod(Request *request, char *buffer);
+char createHttpResponse();
 #endif
